@@ -8,6 +8,9 @@ To use the bot, clone this repository and make sure you have Python3 installed a
 Once you have the code locally, you need to do a few things beforehand to get the bot up and running:
   - Create a sqlite3 database
   - Enter your bot details and database path into `Config.py`
+  - Run `Bot.py`
+
+This bot uses Discords `/` commands which means that global commands can take up to an hour to register so you will need to wait before you can use the commands on the bot.
 
 ## Default Commands
 - `ClearMessages.py`: Clears a specified number of messages in the channel where the bot was invoked.
@@ -36,4 +39,4 @@ def Init(Discord, Config, Bot, Database):
 
 As you can see via the above example, every command has access to the running PyCord instance as `Discord`, the configuration file as `Config`, the running bot instance as `Bot` and an initialised Sqlite3 database as `Database`.
 
-**WARNING**: ONLY USE COMMANDS FROM PEOPLE YOU TRUST, ANY COMMAND HAS ACCESS TO THE CONFIGURATION FILE WHICH CONTAINS YOUR DISCORD BOT TOKEN. IF SOMEONE HAS YOUR DISCORD BOT TOKEN THEY CAN CONTROL YOUR BOT HOW YOU THEY WISH. IF YOUR BOT TOKEN IS COMPROMISED, REGERNERATE IT VIA DISCORDS DEVELOPER WEBSITE
+**WARNING**: Only use commands from people you trust or commands you have vetted. Any command has access to `Config.py` which contains your bot token. With a bot token, any malicious actor can do what they wish with your bot. If your bot token has been compromised you need to regenerate it via discords developer website.
