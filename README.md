@@ -19,6 +19,6 @@ Description = "Runs a Test Command"
 
 def Init(Discord, Config, Bot, Database):
   @Bot.slash_command(description=Description)
-  async def FUNCTIONNAMEHERE(context):
+  async def testcommand(context):
     # Your bot code
 ```
