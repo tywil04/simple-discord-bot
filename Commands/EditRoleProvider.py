@@ -40,8 +40,14 @@ def Init(Discord, Config, Bot, Database):
             RolesToAdd = list(filter(None, RolesToAdd));
 
             Rolenames = RolesToRemove + RolesToAdd;
-
+            
             CanContinue = True;
+            if Database.execute(f"SELECT Title FROM RoleProviders WHERE Title = '{Title}' AND ChannelId = {interaction.channel.id} AND GuildId = {interaction.guild.id}").fetchall() == 0:
+                Embed = Discord.Embed(description=f"A roleprovider with the title {Title} does not exists.", color=Config.Colours.Negative);
+                try: await interaction.response.send_message(embed=Embed, ephemeral=True);
+                except: pass;
+                CanContinue = False;    
+            
             for Rolename in Rolenames:
                 Rolename = Rolename.strip();
                 if Rolename not in [Role.name for Role in interaction.guild.roles]:
@@ -56,12 +62,6 @@ def Init(Discord, Config, Bot, Database):
                     try: await interaction.response.send_message(embed=Embed, ephemeral=True);
                     except: pass;
                     CanContinue = False;       
-
-            if Database.execute(f"SELECT Title FROM RoleProviders WHERE Title = '{Title}' AND ChannelId = {interaction.channel.id} AND GuildId = {interaction.guild.id}").fetchall() == 0:
-                Embed = Discord.Embed(description=f"A roleprovider with the title {Title} does not exists.", color=Config.Colours.Negative);
-                try: await interaction.response.send_message(embed=Embed, ephemeral=True);
-                except: pass;
-                CanContinue = False;    
 
             if CanContinue:
                 RoleproviderMessageId = Database.execute(f"SELECT MessageId FROM RoleProviders WHERE ChannelId = {interaction.channel.id} AND GuildId = {interaction.guild.id} AND Title = '{Title}'").fetchall()[0][0];
