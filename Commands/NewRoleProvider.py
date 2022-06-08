@@ -9,10 +9,10 @@ def Init(Discord, Config, Bot, Database):
 
         async def callback(self, interaction):
             Role = Discord.utils.get(interaction.guild.roles, name=self.label);
-            if Role in interaction.user.roles:
+            if Role in interaction.user.roles: 
                 await interaction.user.remove_roles(Role);
                 await interaction.response.send_message(embed=Discord.Embed(description=f"Successfully removed role `{self.label}`.", color=Config.Colours.Positive), ephemeral=True);
-            else:
+            else: 
                 await interaction.user.add_roles(Role);
                 await interaction.response.send_message(embed=Discord.Embed(description=f"Successfully added role `{self.label}`.", color=Config.Colours.Positive), ephemeral=True);
 
@@ -20,13 +20,15 @@ def Init(Discord, Config, Bot, Database):
         def __init__(self, title, roles):
             super().__init__(title=title);
 
-            self.RolegiverTitle = Discord.ui.InputText(label="Role Provider Title", placeholder="Example Role Provider", style=Discord.InputTextStyle.short, max_length=100);
-            self.RolenamesInput = Discord.ui.InputText(label="Role Names (Seperate with a comma)", placeholder="Dodge", style=Discord.InputTextStyle.long);
+            self.RolegiverTitle = Discord.ui.InputText(label="Role Provider Title (Must be unique)", placeholder="Example Role Provider", style=Discord.InputTextStyle.short, max_length=100);
+            self.RolenamesInput = Discord.ui.InputText(label="Roles (Seperate with a comma)", placeholder="Dodge", style=Discord.InputTextStyle.long);
 
             self.add_item(self.RolegiverTitle);
             self.add_item(self.RolenamesInput);
 
         async def callback(self, interaction):
+            Title = self.RolegiverTitle.value.strip();
+
             Rolenames = self.RolenamesInput.value.strip();
             Rolenames = Rolenames.split(",");
             Rolenames = list(filter(None, Rolenames));
@@ -45,7 +47,13 @@ def Init(Discord, Config, Bot, Database):
                     Embed = Discord.Embed(description=f"Cannot create role provider with duplicate role `{Rolename}`.", color=Config.Colours.Negative);
                     try: await interaction.response.send_message(embed=Embed, ephemeral=True);
                     except: pass;
-                    CanContinue = False;
+                    CanContinue = False;       
+
+            if not Database.execute(f"SELECT Title FROM RoleProviders WHERE Title = '{Title}' AND ChannelId = {interaction.channel.id} AND GuildId = {interaction.guild.id}").fetchall() == 0:
+                Embed = Discord.Embed(description=f"A roleprovider with the title {Title} already exists.", color=Config.Colours.Negative);
+                try: await interaction.response.send_message(embed=Embed, ephemeral=True);
+                except: pass;
+                CanContinue = False;       
 
             if CanContinue:
                 View = Discord.ui.View(timeout=None);
@@ -55,12 +63,12 @@ def Init(Discord, Config, Bot, Database):
                     Button = RoleProviderButton(Rolename);
                     View.add_item(Button);
 
-                Embed = Discord.Embed(title=self.RolegiverTitle.value.strip(), description=f"Click on the buttons below to get/remove its corresponding role.", color=Config.Colours.Positive);
+                Embed = Discord.Embed(title=Title, description=f"Click on the buttons below to get/remove its corresponding role.", color=Config.Colours.Positive);
 
                 Interaction = await interaction.response.send_message(embed=Embed, view=View);
                 Message = await Interaction.original_message();
 
-                Database.execute(f"INSERT INTO RoleProviders (MessageId, ChannelId, GuildId) VALUES ({Message.id}, {Message.channel.id}, {Interaction.guild.id})");
+                Database.execute(f"INSERT INTO RoleProviders (MessageId, ChannelId, GuildId, Title) VALUES ({Message.id}, {Message.channel.id}, {Interaction.guild.id}, '{Title}')");
                 Database.commit();
 
     @Bot.slash_command(description=Description)
@@ -82,7 +90,7 @@ def Init(Discord, Config, Bot, Database):
                 ChannelId = Data[1];
                 Channel = Bot.get_partial_messageable(ChannelId);
 
-                try:
+                try: 
                     Rolenames = [];
                     Message = await Channel.fetch_message(MessageId);
                     for Button in Message.components[0].children:
@@ -103,5 +111,5 @@ def Init(Discord, Config, Bot, Database):
                 except Discord.errors.NotFound:
                     Database.execute(f"DELETE FROM RoleProviders WHERE GuildId = {Guild.id} AND MessageId = {MessageId} AND ChannelId = {ChannelId}");
                     Database.commit();
-
+    
     return OnReady;
