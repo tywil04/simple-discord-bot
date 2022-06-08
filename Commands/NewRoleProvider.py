@@ -34,6 +34,13 @@ def Init(Discord, Config, Bot, Database):
             Rolenames = list(filter(None, Rolenames));
 
             CanContinue = True;
+            
+            if not Database.execute(f"SELECT Title FROM RoleProviders WHERE Title = '{Title}' AND ChannelId = {interaction.channel.id} AND GuildId = {interaction.guild.id}").fetchall() == 0:
+                Embed = Discord.Embed(description=f"A roleprovider with the title {Title} already exists.", color=Config.Colours.Negative);
+                try: await interaction.response.send_message(embed=Embed, ephemeral=True);
+                except: pass;
+                CanContinue = False;       
+            
             for Rolename in Rolenames:
                 Rolename = Rolename.strip();
                 if Rolename not in [Role.name for Role in interaction.guild.roles]:
@@ -48,12 +55,6 @@ def Init(Discord, Config, Bot, Database):
                     try: await interaction.response.send_message(embed=Embed, ephemeral=True);
                     except: pass;
                     CanContinue = False;       
-
-            if not Database.execute(f"SELECT Title FROM RoleProviders WHERE Title = '{Title}' AND ChannelId = {interaction.channel.id} AND GuildId = {interaction.guild.id}").fetchall() == 0:
-                Embed = Discord.Embed(description=f"A roleprovider with the title {Title} already exists.", color=Config.Colours.Negative);
-                try: await interaction.response.send_message(embed=Embed, ephemeral=True);
-                except: pass;
-                CanContinue = False;       
 
             if CanContinue:
                 View = Discord.ui.View(timeout=None);
