@@ -35,7 +35,7 @@ def Init(Discord, Config, Bot, Database):
 
             CanContinue = True;
             
-            if not Database.execute(f"SELECT Title FROM RoleProviders WHERE Title = '{Title}' AND ChannelId = {interaction.channel.id} AND GuildId = {interaction.guild.id}").fetchall() == 0:
+            if len(Database.execute(f"SELECT Title FROM RoleProviders WHERE Title = '{Title}' AND ChannelId = {interaction.channel.id} AND GuildId = {interaction.guild.id}").fetchall()) != 0:
                 Embed = Discord.Embed(description=f"A roleprovider with the title {Title} already exists.", color=Config.Colours.Negative);
                 try: await interaction.response.send_message(embed=Embed, ephemeral=True);
                 except: pass;
